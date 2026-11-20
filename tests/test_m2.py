@@ -20,3 +20,12 @@ def test_negative_latency_rejected():
 def test_integral_version_spelling_canonicalized():
     row={"event_id":"a","doc_id":"1","version":"1.0","op":"delete","side":"source","source_time":"2026-11-16T10:00:00Z","visible_time":"-","reported":"1"}
     assert evaluate([row],{})["rows"][0]["version"]=="1"
+
+def test_document_float_parsed_as_exact_decimal():
+    "TRAP-09 正文内高精度数字不被 float 吞精度"
+    from decimal import Decimal
+    row={"event_id":"a","doc_id":"1","version":"1","op":"upsert","side":"source",
+         "source_time":"2026-11-16T10:00:00Z","visible_time":"-","reported":"1",
+         "payload":'{"big":9007199254740993,"ratio":0.1}'}
+    doc=evaluate([row],{})["rows"][0]["document"]
+    assert doc["big"]==Decimal("9007199254740993") and doc["ratio"]==Decimal("0.1")

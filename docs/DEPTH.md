@@ -31,6 +31,10 @@
 | TRAP-09 | 超大版本 | JSON精度损失 | 文本序列化 | `app/values.py` | `tests/test_m2.py::test_large_version_precise` |
 | TRAP-13 | 删除后迟到旧写 | 文档复活 | 最大版本墓碑 | `app/modules/m3_versions/rules.py` | `tests/test_m3.py::test_tombstone_beats_late_old_write` |
 | TRAP-23 | 延迟阈值边界 | 多判延迟 | 等于阈值通过 | `app/modules/m5_latency/rules.py` | `tests/test_m5.py::test_threshold_equal_pass` |
+| TRAP-30 | 等价写法虚假差异 | 按JSON原文逐字节比对 | 规范指纹吸收字段顺序/等价数字/空白，等价合并不重复生差异 | `app/canonical.py`、`app/modules/m3_versions/rules.py`、`app/modules/m4_visibility/rules.py` | `tests/test_canonical.py::test_field_order_is_equivalent`、`tests/test_m3.py::test_equivalent_rewrites_merge_without_conflict` |
+| TRAP-31 | 过度抹平放过真实变化 | 数字/空白全量归一 | 类型标签保留：文本编号≠数字、缺字段≠null、布尔≠数字、类型改变照报 | `app/canonical.py` | `tests/test_canonical.py::test_text_id_not_equivalent_to_number`、`tests/test_m4.py::test_type_change_caught_in_visibility` |
+| TRAP-32 | 归一覆盖原文无法恢复 | 用规范值替换原文 | 原始document不改写，双端原文/指纹/差异随归档证据留存 | `app/modules/m4_visibility/rules.py`、`app/archive.py` | `tests/test_m3.py::test_conflict_keeps_both_original_documents`、`tests/test_e2e.py::test_archive_evidence_keeps_raw_documents_and_verdict` |
+| TRAP-33 | 正文超大数字精度 | float解析丢尾位 | json parse_float=Decimal精确解析 | `app/modules/m2_schema/rules.py` | `tests/test_m2.py::test_document_float_parsed_as_exact_decimal` |
 
 ## 对账规则
 

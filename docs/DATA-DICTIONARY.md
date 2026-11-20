@@ -2,6 +2,8 @@
 
 event_id唯一，doc_id文本保留。side为source或index；版本正整数按Decimal比较并作为文本序列化。upsert要求JSON对象，delete忽略payload并产生墓碑。相同文档同端同版本不同内容全部隔离，存在未裁决冲突的主体不回落旧版本；同内容合并来源；较高版本覆盖低版本，迟到旧写不得覆盖墓碑。
 
+正文同一性裁决（app/canonical.py，M3版本冲突/M4可见性/M7归档共用）：以规范指纹判定同一业务版本，吸收三类等价写法——JSON字段顺序、数字的等价写法（1与1.00、超大整数、科学计数法，按Decimal精确比较，正文浮点以parse_float=Decimal解析不丢精度）、字符串与键中的首尾及连续空白/换行/制表差异。类型不被抹平：文本编号与数字不等价、字段缺失与显式null不等价、布尔与数字不等价、正文类型（对象/数组/标量）改变报TYPE_CHANGED；数组顺序与长度有业务含义。真实变化经document_diff按路径输出VALUE_CHANGED/TYPE_CHANGED/FIELD_MISSING/LENGTH_MISMATCH/ITEM_CHANGED，left/right取原始值。原始document全程不改写：M1保留_raw原始单元格，M3合并保留首条原文与来源行，M4留存source_document/index_document双侧原文、双侧指纹与content_diff，隔离行带conflict_evidence（锚事件与当前事件原文、指纹集合），全部随归档CSV证据列可追回。
+
 双端最终版本、操作、文档分别核验。目标缺失、删除未确认、索引领先、陈旧索引、内容差异分开展示。source_time与visible_time带偏移；可见延迟按实际秒数。默认阈值120秒，等于阈值通过。已可见但超过阈值为延迟，尚无目标且等待时间超过阈值为缺失，等待中不冒充延迟。
 
 对账expected=每文档应通过的1，reported=门禁通过1或未通过0，逐条保存visibility_state和gate原因，允许按文档复核。

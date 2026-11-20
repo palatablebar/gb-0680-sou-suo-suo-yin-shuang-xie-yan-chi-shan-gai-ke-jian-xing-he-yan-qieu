@@ -7,6 +7,18 @@ import importlib
 def create_app():
     application=Flask(__name__,template_folder="templates",static_folder="static")
     application.config["MAX_CONTENT_LENGTH"]=4*1024*1024
+
+    @application.template_filter("cell")
+    def render_cell(value):
+        # 结构化差异在页面压缩为 路径+类型；指纹仅显示前 12 位，完整值随归档证据留存。
+        if isinstance(value, list):
+            if not value:
+                return "—"
+            if all(isinstance(item, dict) and "kind" in item and "path" in item for item in value):
+                return "；".join(f"{item['path']} {item['kind']}" for item in value)
+        if isinstance(value, str) and len(value) == 64 and all(c in "0123456789abcdef" for c in value):
+            return value[:12] + "…"
+        return value
     @application.errorhandler(DomainError)
     def domain_error(error): return jsonify({"code":error.code,"message":error.message}),error.status
     @application.errorhandler(KeyError)
